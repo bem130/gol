@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>game of life</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <canvas id="imgOut"></canvas>
+    </body>
+</html>
+<script>
+    size = [1920,1080]
+    function mkimg(barr) {
+        let iarr = new Uint8ClampedArray(size[0]*size[1]*4).fill(255);
+        for (let i=0;i<size[0]*size[1];i++) {
+            iarr[i*4+0] = barr[i]*255
+            iarr[i*4+1] = barr[i]*255
+            iarr[i*4+2] = barr[i]*255
+        }
+        let co = document.getElementById("imgOut");
+        co.height=size[1];co.width=size[0];co.getContext('2d').putImageData(new ImageData(iarr,size[0],size[1]),0,0);
+    }
+
+let delay = 0
+
+let barr
+function first() {
+    barr = new Uint8ClampedArray(size[0]*size[1]).fill(0);
+    for (let cr=0;cr<500000;cr++) {
+        barr[Math.floor(Math.random()*size[0]*size[1])] = 1
+    }
+    mkimg(barr);
+    setTimeout(next,delay);
+    resizeImg()
+}
+
+function next() {
+    let narr = new Uint8ClampedArray(size[0]*size[1]).fill(0);
+    for (let iy = 0; iy < size[1]; iy++) {
+        for (let ix = 0; ix < size[0]; ix++) {
+            let ar = 0;
+            let ii = (iy*size[0]+ix);
+            for (let by=-1;by<=1;by++) {
+                for (let bx=-1;bx<=1;bx++) {
+                    let bi = ((iy+by)*size[0]+ix+bx);
+                    if (!(by==0&bx==0)&&(iy+by>=0)&&(ix+bx>=0)&&(ix+bx<size[0])&&(iy+by<size[1])) {
+                        if (barr[bi]==1) {
+                            ar++;
+                        }
+                    }
+                }
+            }
+            if (barr[ii]==0) {
+                if (ar==3) {
+                    narr[ii] = 1;
+                }
+            }
+            else if (ar==2|ar==3) {
+                narr[ii] = 1;
+            }
+        }
+    }
+    barr = narr
+    mkimg(barr);
+    setTimeout(next,delay);
+}
+
+first()
+
+
+// resize window
+function resizeImg() {
+    canvas = document.getElementById("imgOut")
+    dw = canvas.width;
+    dh = canvas.height;
+    let bottom_area = 0;
+    let rw = 0;let rh = 0;
+    let ww = window.innerWidth;
+    let wh = window.innerHeight-bottom_area;
+    let csc = 1
+    hcsc = ww/dw
+    wcsc = wh/dh
+    // console.log(hcsc,wcsc)
+    if (hcsc>wcsc) {
+        csc = wcsc
+        rw = (ww - dw*csc)/2
+    }
+    else {
+        csc = hcsc
+        rh = (wh - dh*csc)/2
+    }
+    canvas.style.marginTop = (rh).toString()+"px";
+    canvas.style.marginBottom = (rh).toString()+"px";
+    canvas.style.marginLeft = (rw).toString()+"px";
+    canvas.style.marginRight = (rw).toString()+"px";
+    canvas.style.transform = "scale("+csc.toString()+","+csc.toString()+")";
+};
+resizeImg()
+window.onresize = resizeImg
+
+</script>
+<style>
+    body {
+        background-color: black;
+    }
+    #imgOut {
+        transform-origin: left top;
+        position: absolute;
+        top: 0;
+        left: 0;
+        image-rendering: pixelated;
+    }
+</style>
