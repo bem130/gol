@@ -44,7 +44,7 @@ LRESULT CALLBACK WndProc(HWND hwnd , UINT msg , WPARAM wp , LPARAM lp) {
 		}
 		return 0;
 	case WM_CREATE:
-   		std::cout << "Neknaj 3D Maze Desktop" << std::endl;
+   		std::cout << "Game of Life" << std::endl;
         first();
 		return 0;
 	case WM_PAINT:
@@ -72,7 +72,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	if (!RegisterClass(&winc)) return -1;
 
 	hwnd = CreateWindow(
-		TEXT("app") , TEXT("Neknaj 3D Maze") ,
+		TEXT("app") , TEXT("Game of Life") ,
 		WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX | WS_VISIBLE ,
 		CW_USEDEFAULT , CW_USEDEFAULT ,
 		worldsize[0] , worldsize[1] , // window size
@@ -104,7 +104,7 @@ void paintscreen(HWND hwnd) {
 		{
 			end = std::chrono::system_clock::now();
 			int msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-			std::cout << "\033[2K\033[1G" << "f" << "--" << " ms" << msec << " fps" << (double)1000/msec;
+			std::cout << "\033[2K\033[1G" << msec << "ms fps" << (double)1000/msec;
 			start = std::chrono::system_clock::now();
 		}
 		SetDIBitsToDevice(hdc,0,0,width,height,0,0,0,height,image,&bmpInfo,DIB_RGB_COLORS);
@@ -126,11 +126,11 @@ void first() {
 void next() {
     for (int iy = 0; iy < worldsize[1]; iy++) {
         for (int ix = 0; ix < worldsize[0]; ix++) {
-            uchar ar = 0;
+            int ar = 0;
             int ii = (iy*worldsize[0]+ix);
             nworld[ii] = 0;
-            for (uchar by=-1;by<=1;by++) {
-                for (uchar bx=-1;bx<=1;bx++) {
+            for (int by=-1;by<=1;by++) {
+                for (int bx=-1;bx<=1;bx++) {
                     int bi = ((iy+by)*worldsize[0]+ix+bx);
                     if (!(by==0&bx==0)&&(iy+by>=0)&&(ix+bx>=0)&&(ix+bx<worldsize[0])&&(iy+by<worldsize[1])) {
                         if (world[bi]==1) {
@@ -157,7 +157,7 @@ void next() {
 }
 void mkimg(golworld w) {
     for (int i=0;i<worldsize[0]*worldsize[1];i++) {
-        uchar bright = w[i]*100;
+        uchar bright = w[i]*255;
         image[i*4+0] = bright;
         image[i*4+1] = bright;
         image[i*4+2] = bright;
