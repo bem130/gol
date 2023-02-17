@@ -36,14 +36,14 @@ function first() {
 
 function next() {
     let narr = new Uint8ClampedArray(size[0]*size[1]).fill(0);
-    for (let iy = 0; iy < size[1]; iy++) {
-        for (let ix = 0; ix < size[0]; ix++) {
+    for (let iy = 1; iy < size[1]-1; iy++) {
+        for (let ix = 1; ix < size[0]-1; ix++) {
             let ar = 0;
             let ii = (iy*size[0]+ix);
             for (let by=-1;by<=1;by++) {
                 for (let bx=-1;bx<=1;bx++) {
                     let bi = ((iy+by)*size[0]+ix+bx);
-                    if (!(by==0&bx==0)&&(iy+by>=0)&&(ix+bx>=0)&&(ix+bx<size[0])&&(iy+by<size[1])) {
+                    if (!(by==0&bx==0)) {
                         if (barr[bi]==1) {
                             ar++;
                         }
