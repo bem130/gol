@@ -48,22 +48,22 @@ void next() {
         for (int ix = 1; ix < worldsize[0]-1; ix++) {
             int ar = 0;
             int ii = (iy*worldsize[0]+ix);
-			if (world[(iy-1)*worldsize[0]+ix-1]==1) {ar++;}
-			if (world[(iy-1)*worldsize[0]+ix+0]==1) {ar++;}
-			if (world[(iy-1)*worldsize[0]+ix+1]==1) {ar++;}
-			if (world[(iy+0)*worldsize[0]+ix-1]==1) {ar++;}
-			if (world[(iy+0)*worldsize[0]+ix+1]==1) {ar++;}
-			if (world[(iy+1)*worldsize[0]+ix-1]==1) {ar++;}
-			if (world[(iy+1)*worldsize[0]+ix+0]==1) {ar++;}
-			if (world[(iy+1)*worldsize[0]+ix+1]==1) {ar++;}
-			//printf("%d " ,ar);
-            if (world[ii]==0) { // check alive
-                if (ar==3) {
-                    nworld[ii] = 1;
+            for (int by=-1;by<=1;by++) {
+                for (int bx=-1;bx<=1;bx++) {
+                    int bi = ((iy+by)*worldsize[0]+ix+bx);
+                    if (!(by==0&bx==0)) {
+                        if (world[bi]==1) {
+                            ar++;
+                        }
+                    }
                 }
             }
-            else if (ar==2||ar==3) {
+
+			//printf("%d " ,ar);
+            if(ar==3) {
                 nworld[ii] = 1;
+            } else if(ar==2) {
+                nworld[ii] = world[ii];
             }
         }
     }
@@ -77,7 +77,7 @@ void showimg(golworld w) {
 	std::cout << "generation " << gcnt << std::endl; // info
     for (int y=0;y<worldsize[1];y++) {
 		for (int x=0;x<worldsize[0];x++) {
-			if (w[y*x]==0) { // dead
+			if (w[y*worldsize[0]+x]==0) { // dead
 				std::cout << "..";
 			}
 			else { // alive
