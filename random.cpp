@@ -74,16 +74,16 @@ void next() {
     return;
 }
 void showimg(golworld w) {
-	std::cout << "generation " << gcnt << std::endl; // info
+    std::cout << "generation " << gcnt << std::endl; // info
     for (int y=0;y<worldsize[1];y++) {
-		for (int x=0;x<worldsize[0];x++) {
-			if (w[y*worldsize[0]+x]==0) { // dead
-				std::cout << "..";
-			}
-			else { // alive
-				std::cout << "WW";
-			}
-		}
-		std::cout << std::endl;
+        for (int x=0;x<worldsize[0];x++) {
+            if (w[y*worldsize[0]+x]==0) { // dead
+                std::cout << "..";
+            }
+            else { // alive
+                std::cout << "WW";
+            }
+        }
+        std::cout << std::endl;
     }
 }

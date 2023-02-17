@@ -13,10 +13,10 @@ typedef std::array<int,2> golworldsize;
 typedef std::vector<byte> golworld;
 typedef unsigned char uchar;
 
-golworldsize worldsize = {600,400};
+golworldsize worldsize = {400,400};
 golworld world = golworld(worldsize[0]*worldsize[1]);
 golworld nworld = golworld(worldsize[0]*worldsize[1]);
-uchar* image = new unsigned char [worldsize[0]*worldsize[1]*4];
+static uchar* image = new uchar [worldsize[0]*worldsize[1]*4];
 
 
 std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
@@ -80,11 +80,13 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	);
 
 	if (hwnd == NULL) return -1;
-
 	while(GetMessage(&msg,NULL,0,0)) {DispatchMessage(&msg);}
 	return msg.wParam;
 }
 void paintscreen(HWND hwnd) {
+	for (int i=0;i<1000;i++) {
+		next();
+	}
 	HDC hdc;
 	PAINTSTRUCT ps;
 	RECT rect;
@@ -98,8 +100,7 @@ void paintscreen(HWND hwnd) {
 	bmpInfo.bmiHeader.biPlanes=1;
 	bmpInfo.bmiHeader.biBitCount=32;
 	bmpInfo.bmiHeader.biCompression=BI_RGB;
-    next();
-	hdc = GetDC(hwnd);
+hdc=GetDC(hwnd);
 	{ // 3d
 		{
 			end = std::chrono::system_clock::now();
@@ -124,35 +125,36 @@ void first() {
     return;
 }
 void next() {
-    for (int iy = 0; iy < worldsize[1]; iy++) {
-        for (int ix = 0; ix < worldsize[0]; ix++) {
+    for (int i=0;i<worldsize[0]*worldsize[1];i++) { // fill 0
+        nworld[i] = 0;
+    }
+    for (int iy = 1; iy < worldsize[1]-1; iy++) {
+        for (int ix = 1; ix < worldsize[0]-1; ix++) {
             int ar = 0;
             int ii = (iy*worldsize[0]+ix);
-            nworld[ii] = 0;
             for (int by=-1;by<=1;by++) {
                 for (int bx=-1;bx<=1;bx++) {
                     int bi = ((iy+by)*worldsize[0]+ix+bx);
-                    if (!(by==0&bx==0)&&(iy+by>=0)&&(ix+bx>=0)&&(ix+bx<worldsize[0])&&(iy+by<worldsize[1])) {
+                    if (!(by==0&bx==0)) {
                         if (world[bi]==1) {
                             ar++;
                         }
                     }
                 }
             }
-            if (world[ii]==0) {
-                if (ar==3) {
-                    nworld[ii] = 1;
-                }
-            }
-            else if (ar==2|ar==3) {
+
+			//printf("%d " ,ar);
+            if(ar==3) {
                 nworld[ii] = 1;
+            } else if(ar==2) {
+                nworld[ii] = world[ii];
             }
         }
     }
-    for (int i=0;i<worldsize[0]*worldsize[1];i++) {
+	mkimg(nworld);
+    for (int i=0;i<worldsize[0]*worldsize[1];i++) { // copy array
         world[i] = nworld[i];
     }
-	mkimg(world);
     return;
 }
 void mkimg(golworld w) {
