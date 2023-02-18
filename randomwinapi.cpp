@@ -13,7 +13,7 @@ typedef std::array<int,2> golworldsize;
 typedef std::vector<byte> golworld;
 typedef unsigned char uchar;
 
-golworldsize worldsize = {400,400};
+golworldsize worldsize = {200,200};
 golworld world = golworld(worldsize[0]*worldsize[1]);
 golworld nworld = golworld(worldsize[0]*worldsize[1]);
 static uchar* image = new uchar [worldsize[0]*worldsize[1]*4];
@@ -84,9 +84,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	return msg.wParam;
 }
 void paintscreen(HWND hwnd) {
-	for (int i=0;i<1000;i++) {
-		next();
-	}
+	next();
 	HDC hdc;
 	PAINTSTRUCT ps;
 	RECT rect;
@@ -100,7 +98,7 @@ void paintscreen(HWND hwnd) {
 	bmpInfo.bmiHeader.biPlanes=1;
 	bmpInfo.bmiHeader.biBitCount=32;
 	bmpInfo.bmiHeader.biCompression=BI_RGB;
-hdc=GetDC(hwnd);
+	hdc=BeginPaint(hwnd,&ps);
 	{ // 3d
 		{
 			end = std::chrono::system_clock::now();
@@ -110,6 +108,8 @@ hdc=GetDC(hwnd);
 		}
 		SetDIBitsToDevice(hdc,0,0,width,height,0,0,0,height,image,&bmpInfo,DIB_RGB_COLORS);
 	}
+	EndPaint(hwnd,&ps);
+	InvalidateRect(hwnd,NULL,FALSE);
 	return;
 }
 
@@ -158,11 +158,19 @@ void next() {
     return;
 }
 void mkimg(golworld w) {
-    for (int i=0;i<worldsize[0]*worldsize[1];i++) {
-        uchar bright = w[i]*255;
-        image[i*4+0] = bright;
-        image[i*4+1] = bright;
-        image[i*4+2] = bright;
-        image[i*4+3] = 255;
+    for (int y=0;y<worldsize[1];y++) {
+        for (int x=0;x<worldsize[0];x++) {
+			uchar bright = 0;
+            if (w[y*worldsize[0]+x]==0) { // dead
+                bright = 0;
+            }
+            else { // alive
+                bright = 255;
+            }
+			image[(y*worldsize[0]+x)*4+0] = bright;
+			image[(y*worldsize[0]+x)*4+1] = bright;
+			image[(y*worldsize[0]+x)*4+2] = bright;
+			image[(y*worldsize[0]+x)*4+3] = 255;
+        }
     }
 }
