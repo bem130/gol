@@ -5,9 +5,6 @@
 #include <vector>
 #include <cmath>
 #include <random>
-#include <chrono>
-#include <algorithm>
-#include <iterator>
 
 typedef std::array<int,2> golworldsize;
 typedef std::vector<byte> golworld;
@@ -18,10 +15,6 @@ golworldsize worldsize = {1000,1000};
 golworld world = golworld(worldsize[0]*worldsize[1]);
 golworld nworld = golworld(worldsize[0]*worldsize[1]);
 static uchar* image = new uchar [worldsize[0]*worldsize[1]*4];
-
-
-std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 
 void mkimg(golworld w);
 void paintscreen(HWND);
@@ -75,8 +68,6 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	winc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	winc.lpszMenuName = NULL;
 	winc.lpszClassName = TEXT("app");
-
-	
 
 	if (!RegisterClass(&winc)) return -1;
 
