@@ -19,13 +19,13 @@ void first();
 void next();
 
 int main() {
-	first();
-	showimg(world);
-	for (int c=0;c<1000;c++) {
-		std::cout << "\033[" << worldsize[1]+1 << "A";
-		next();
-	}
-	return 0;
+    first();
+    showimg(world);
+    for (int c=0;c<1000;c++) {
+        std::cout << "\033[" << worldsize[1]+1 << "A";
+        next();
+    }
+    return 0;
 }
 
 void first() {
@@ -40,7 +40,7 @@ void first() {
     return;
 }
 void next() {
-	gcnt++;
+    gcnt++;
     for (int iy = 1; iy < worldsize[1]-1; iy++) {
         for (int ix = 1; ix < worldsize[0]-1; ix++) {
             int ar = 0;
@@ -50,8 +50,8 @@ void next() {
                     ar+=world[(iy+by)*worldsize[0]+ix+bx];
                 }
             }
-			ar-=world[ii];
-        	nworld[ii] = 0;
+            ar-=world[ii];
+            nworld[ii] = 0;
             if(ar==3) {
                 nworld[ii] = 1;
             } else if(ar==2) {
@@ -59,7 +59,7 @@ void next() {
             }
         }
     }
-	showimg(nworld);
+    showimg(nworld);
     for (int i=0;i<worldsize[0]*worldsize[1];i++) { // copy array
         world[i] = nworld[i];
     }
