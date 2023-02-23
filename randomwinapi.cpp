@@ -103,7 +103,7 @@ void paintscreen(HWND hwnd) {
 	int height = rect.bottom - rect.top;
 	hdc=BeginPaint(hwnd,&ps);
 	{ // 3d
-		SetDIBitsToDevice(hdc,0,0,worldsize[0],worldsize[1],0,0,0,worldsize[1],image,&bmpInfo,DIB_RGB_COLORS);
+		SetDIBitsToDevice(hdc,(width-worldsize[0])/2,(height-worldsize[1])/2,worldsize[0],worldsize[1],0,0,0,worldsize[1],image,&bmpInfo,DIB_RGB_COLORS);
 	}
 	EndPaint(hwnd,&ps);
 	InvalidateRect(hwnd,NULL,FALSE);
