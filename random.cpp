@@ -41,25 +41,17 @@ void first() {
 }
 void next() {
 	gcnt++;
-    for (int i=0;i<worldsize[0]*worldsize[1];i++) { // fill 0
-        nworld[i] = 0;
-    }
     for (int iy = 1; iy < worldsize[1]-1; iy++) {
         for (int ix = 1; ix < worldsize[0]-1; ix++) {
             int ar = 0;
-            int ii = (iy*worldsize[0]+ix);
+            int ii = iy*worldsize[0]+ix;
             for (int by=-1;by<=1;by++) {
                 for (int bx=-1;bx<=1;bx++) {
-                    int bi = ((iy+by)*worldsize[0]+ix+bx);
-                    if (!(by==0&bx==0)) {
-                        if (world[bi]==1) {
-                            ar++;
-                        }
-                    }
+                    ar+=world[(iy+by)*worldsize[0]+ix+bx];
                 }
             }
-
-			//printf("%d " ,ar);
+			ar-=world[ii];
+        	nworld[ii] = 0;
             if(ar==3) {
                 nworld[ii] = 1;
             } else if(ar==2) {

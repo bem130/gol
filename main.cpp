@@ -32,7 +32,6 @@ LRESULT CALLBACK WndProc(HWND hwnd , UINT msg , WPARAM wp , LPARAM lp) {
 		PostQuitMessage(0);
 		return 0;
 	case WM_CREATE:
-   		std::cout << "Game of Life" << std::endl;
 		return 0;
 	case WM_PAINT:
 		paintscreen(hwnd);
@@ -42,6 +41,7 @@ LRESULT CALLBACK WndProc(HWND hwnd , UINT msg , WPARAM wp , LPARAM lp) {
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,int nCmdShow) {
+   	std::cout << "Game of Life" << std::endl << std::endl;
     first(lpCmdLine);
 
 	HWND hwnd;
@@ -97,43 +97,30 @@ void paintscreen(HWND hwnd) {
 }
 
 void first(PSTR fname) {
+    std::cout << "loading file: " << fname << std::endl;
     std::ifstream ifs(fname);
     std::string str;
 	int margin[4] = {0,0,0,0};
 	{ // margin
 		getline(ifs,str);
-        std::cout << str << std::endl;
         int rcnt = 0;
         int nlen = 0;
         int nstart = 0;
         for (int i=0;i<str.length();i++) {
             if (str.substr(i,1)==",") {
                 if (rcnt<4) {
-					try{
-                    	margin[rcnt] = std::stoi(str.substr(nstart,nlen));
-					}
-					catch(const std::invalid_argument& e){
-						std::cerr << "invalid argument" << std::endl;
-					}
-					catch(const std::out_of_range& e){
-						std::cerr << "Out of range" <<std::endl;
-					}
+					try{margin[rcnt] = std::stoi(str.substr(nstart,nlen));}
+					catch(const std::invalid_argument& e){std::cerr << "invalid argument" << std::endl;}
+					catch(const std::out_of_range& e){std::cerr << "Out of range" <<std::endl;}
                 }
                 rcnt++;nstart = i+1;nlen = 0;
             }
             else {nlen++;}
         }
 		if (rcnt<4) {
-			try{
-				std::cout << str.substr(nstart,nlen) << std::endl;
-				margin[rcnt] = std::stoi(str.substr(nstart,nlen));
-			}
-			catch(const std::invalid_argument& e){
-				std::cerr << "invalid argument" << std::endl;
-			}
-			catch(const std::out_of_range& e){
-				std::cerr << "Out of range" <<std::endl;
-			}
+			try{margin[rcnt] = std::stoi(str.substr(nstart,nlen));}
+			catch(const std::invalid_argument& e){std::cerr << "invalid argument" << std::endl;}
+			catch(const std::out_of_range& e){std::cerr << "Out of range" <<std::endl;}
 		}
         std::cout << "margin: " << margin[0] << " " << margin[1] << " " << margin[2] << " " << margin[3] << std::endl;
 	}
@@ -148,50 +135,38 @@ void first(PSTR fname) {
 		for (int i=0;i<margin[0]*lwidth;i++) {world.insert(world.end(),0);}
 
 		for (int i=0;i<margin[1];i++) {world.insert(world.end(),0);}
-        for (int xcnt=0;xcnt<str.length();xcnt++) {
-            if (str.substr(xcnt,1)=="0") {world.insert(world.end(),0);}
-            else {world.insert(world.end(),1);}
-        }
+        for (int xcnt=0;xcnt<str.length();xcnt++) {world.insert(world.end(),!(str.substr(xcnt,1)=="0"));}
 		for (int i=0;i<margin[3];i++) {world.insert(world.end(),0);}
 		ycnt++;
 	}
     while (getline(ifs,str)) {
-		width = str.length();
+		if (width!=str.length()) {
+			std::cerr << "The World Edges are not aligned" <<std::endl;
+		}
 		for (int i=0;i<margin[1];i++) {world.insert(world.end(),0);}
-        for (int xcnt=0;xcnt<str.length();xcnt++) {
-            if (str.substr(xcnt,1)=="0") {world.insert(world.end(),0);}
-            else {world.insert(world.end(),1);}
-        }
+        for (int xcnt=0;xcnt<str.length();xcnt++) {world.insert(world.end(),!(str.substr(xcnt,1)=="0"));}
 		for (int i=0;i<margin[3];i++) {world.insert(world.end(),0);}
 		ycnt++;
 	}
 	for (int i=0;i<margin[2]*lwidth;i++) {world.insert(world.end(),0);}
-
-    std::cout << world.size() << std::endl;
 	worldsize = {lwidth,margin[0]+ycnt+margin[2]};
-    std::cout << worldsize[0] << " " << worldsize[1] << " " << worldsize[0]*worldsize[1] << std::endl;
+    std::cout << "world-size: " << worldsize[0] << "x" << worldsize[1] << std::endl;
 	nworld = golworld(worldsize[0]*worldsize[1]);
 	image = new uchar [worldsize[0]*worldsize[1]*4];
     return;
 }
 void next() {
-    for (int i=0;i<worldsize[0]*worldsize[1];i++) { // fill 0
-        nworld[i] = 0;
-    }
     for (int iy = 1; iy < worldsize[1]-1; iy++) {
         for (int ix = 1; ix < worldsize[0]-1; ix++) {
             int ar = 0;
-            int ii = (iy*worldsize[0]+ix);
+            int ii = iy*worldsize[0]+ix;
             for (int by=-1;by<=1;by++) {
                 for (int bx=-1;bx<=1;bx++) {
-                    int bi = ((iy+by)*worldsize[0]+ix+bx);
-                    if (!(by==0&bx==0)) {
-                        if (world[bi]==1) {
-                            ar++;
-                        }
-                    }
+                    ar+=world[(iy+by)*worldsize[0]+ix+bx];
                 }
             }
+			ar-=world[ii];
+        	nworld[ii] = 0;
             if(ar==3) {
                 nworld[ii] = 1;
             } else if(ar==2) {
