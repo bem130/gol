@@ -1,9 +1,12 @@
 #include <windows.h>
 #include <iostream>
+#include <fstream>
+#include <cstdlib>
 
 #include <array>
 #include <vector>
 #include <cmath>
+#include <string>
 #include <random>
 
 typedef std::array<int,2> golworldsize;
@@ -11,14 +14,14 @@ typedef std::vector<byte> golworld;
 typedef unsigned char uchar;
 BITMAPINFO bmpInfo;
 
-golworldsize worldsize = {1000,1000};
-golworld world = golworld(worldsize[0]*worldsize[1]);
-golworld nworld = golworld(worldsize[0]*worldsize[1]);
-static uchar* image = new uchar [worldsize[0]*worldsize[1]*4];
+golworldsize worldsize;
+golworld world;
+golworld nworld;
+static uchar* image;
 
 void mkimg(golworld);
 void paintscreen(HWND);
-void first();
+void first(PSTR);
 void next();
 
 LRESULT CALLBACK WndProc(HWND hwnd , UINT msg , WPARAM wp , LPARAM lp) {
@@ -39,7 +42,8 @@ LRESULT CALLBACK WndProc(HWND hwnd , UINT msg , WPARAM wp , LPARAM lp) {
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,int nCmdShow) {
-    first();
+    first(lpCmdLine);
+
 	HWND hwnd;
 	MSG msg;
 	WNDCLASS winc;
@@ -92,10 +96,82 @@ void paintscreen(HWND hwnd) {
 	return;
 }
 
-void first() {
-    for (int cr=0;cr<worldsize[0]*worldsize[1];cr++) {
-        if (rand()%100>70) {world[cr] = 1;}
-    }
+void first(PSTR fname) {
+    std::ifstream ifs(fname);
+    std::string str;
+	int margin[4] = {0,0,0,0};
+	{ // margin
+		getline(ifs,str);
+        std::cout << str << std::endl;
+        int rcnt = 0;
+        int nlen = 0;
+        int nstart = 0;
+        for (int i=0;i<str.length();i++) {
+            if (str.substr(i,1)==",") {
+                if (rcnt<4) {
+					try{
+                    	margin[rcnt] = std::stoi(str.substr(nstart,nlen));
+					}
+					catch(const std::invalid_argument& e){
+						std::cerr << "invalid argument" << std::endl;
+					}
+					catch(const std::out_of_range& e){
+						std::cerr << "Out of range" <<std::endl;
+					}
+                }
+                rcnt++;nstart = i+1;nlen = 0;
+            }
+            else {nlen++;}
+        }
+		if (rcnt<4) {
+			try{
+				std::cout << str.substr(nstart,nlen) << std::endl;
+				margin[rcnt] = std::stoi(str.substr(nstart,nlen));
+			}
+			catch(const std::invalid_argument& e){
+				std::cerr << "invalid argument" << std::endl;
+			}
+			catch(const std::out_of_range& e){
+				std::cerr << "Out of range" <<std::endl;
+			}
+		}
+        std::cout << "margin: " << margin[0] << " " << margin[1] << " " << margin[2] << " " << margin[3] << std::endl;
+	}
+	world = {};
+	int ycnt = 0;
+	int width = 0;
+	int lwidth;
+    {
+		getline(ifs,str);
+		width = str.length();
+		lwidth = margin[1]+width+margin[3];
+		for (int i=0;i<margin[0]*lwidth;i++) {world.insert(world.end(),0);}
+
+		for (int i=0;i<margin[1];i++) {world.insert(world.end(),0);}
+        for (int xcnt=0;xcnt<str.length();xcnt++) {
+            if (str.substr(xcnt,1)=="0") {world.insert(world.end(),0);}
+            else {world.insert(world.end(),1);}
+        }
+		for (int i=0;i<margin[3];i++) {world.insert(world.end(),0);}
+		ycnt++;
+	}
+    while (getline(ifs,str)) {
+		width = str.length();
+		for (int i=0;i<margin[1];i++) {world.insert(world.end(),0);}
+        for (int xcnt=0;xcnt<str.length();xcnt++) {
+            if (str.substr(xcnt,1)=="0") {world.insert(world.end(),0);}
+            else {world.insert(world.end(),1);}
+        }
+		for (int i=0;i<margin[3];i++) {world.insert(world.end(),0);}
+		ycnt++;
+	}
+	for (int i=0;i<margin[2]*lwidth;i++) {world.insert(world.end(),0);}
+
+    std::cout << world.size() << std::endl;
+	worldsize = {lwidth,margin[0]+ycnt+margin[2]};
+    std::cout << worldsize[0] << " " << worldsize[1] << " " << worldsize[0]*worldsize[1] << std::endl;
+	nworld = golworld(worldsize[0]*worldsize[1]);
+	image = new uchar [worldsize[0]*worldsize[1]*4];
     return;
 }
 void next() {
