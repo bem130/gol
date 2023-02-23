@@ -12,8 +12,9 @@
 typedef std::array<int,2> golworldsize;
 typedef std::vector<byte> golworld;
 typedef unsigned char uchar;
+BITMAPINFO bmpInfo;
 
-golworldsize worldsize = {200,200};
+golworldsize worldsize = {1000,1000};
 golworld world = golworld(worldsize[0]*worldsize[1]);
 golworld nworld = golworld(worldsize[0]*worldsize[1]);
 static uchar* image = new uchar [worldsize[0]*worldsize[1]*4];
@@ -58,6 +59,12 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	HWND hwnd;
 	MSG msg;
 	WNDCLASS winc;
+	bmpInfo.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
+	bmpInfo.bmiHeader.biWidth=worldsize[0];
+	bmpInfo.bmiHeader.biHeight=worldsize[1];
+	bmpInfo.bmiHeader.biPlanes=1;
+	bmpInfo.bmiHeader.biBitCount=32;
+	bmpInfo.bmiHeader.biCompression=BI_RGB;
 
 	winc.style = CS_HREDRAW | CS_VREDRAW;
 	winc.lpfnWndProc = WndProc;
@@ -69,13 +76,15 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	winc.lpszMenuName = NULL;
 	winc.lpszClassName = TEXT("app");
 
+	
+
 	if (!RegisterClass(&winc)) return -1;
 
 	hwnd = CreateWindow(
 		TEXT("app") , TEXT("Game of Life") ,
-		WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX | WS_VISIBLE ,
+		WS_OVERLAPPEDWINDOW | WS_VISIBLE ,
 		CW_USEDEFAULT , CW_USEDEFAULT ,
-		worldsize[0] , worldsize[1] , // window size
+		worldsize[0]+100 , worldsize[1]+100 , // window size
 		NULL , NULL , hInstance , NULL
 	);
 
@@ -83,30 +92,18 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,PSTR lpCmdLine,in
 	while(GetMessage(&msg,NULL,0,0)) {DispatchMessage(&msg);}
 	return msg.wParam;
 }
+
 void paintscreen(HWND hwnd) {
 	next();
 	HDC hdc;
 	PAINTSTRUCT ps;
 	RECT rect;
-	static BITMAPINFO bmpInfo;
 	GetClientRect(hwnd, &rect);
 	int width = rect.right - rect.left;
 	int height = rect.bottom - rect.top;
-	bmpInfo.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-	bmpInfo.bmiHeader.biWidth=width;
-	bmpInfo.bmiHeader.biHeight=height;
-	bmpInfo.bmiHeader.biPlanes=1;
-	bmpInfo.bmiHeader.biBitCount=32;
-	bmpInfo.bmiHeader.biCompression=BI_RGB;
 	hdc=BeginPaint(hwnd,&ps);
 	{ // 3d
-		{
-			end = std::chrono::system_clock::now();
-			int msec = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-			std::cout << "\033[2K\033[1G" << msec << "ms fps" << (double)1000/msec;
-			start = std::chrono::system_clock::now();
-		}
-		SetDIBitsToDevice(hdc,0,0,width,height,0,0,0,height,image,&bmpInfo,DIB_RGB_COLORS);
+		SetDIBitsToDevice(hdc,0,0,worldsize[0],worldsize[1],0,0,0,worldsize[1],image,&bmpInfo,DIB_RGB_COLORS);
 	}
 	EndPaint(hwnd,&ps);
 	InvalidateRect(hwnd,NULL,FALSE);
@@ -115,12 +112,7 @@ void paintscreen(HWND hwnd) {
 
 void first() {
     for (int cr=0;cr<worldsize[0]*worldsize[1];cr++) {
-        if (rand()%100>50) {
-            world[cr] = 1;
-        }
-        else {
-            world[cr] = 0;
-        }
+        if (rand()%100>70) {world[cr] = 1;}
     }
     return;
 }
@@ -142,8 +134,6 @@ void next() {
                     }
                 }
             }
-
-			//printf("%d " ,ar);
             if(ar==3) {
                 nworld[ii] = 1;
             } else if(ar==2) {
@@ -151,26 +141,14 @@ void next() {
             }
         }
     }
-	mkimg(nworld);
-    for (int i=0;i<worldsize[0]*worldsize[1];i++) { // copy array
+    for (int i=0;i<worldsize[0]*worldsize[1];i++) {
+		// make image
+		uchar bright = nworld[i]*255;
+		image[i*4+0] = bright; // B
+		image[i*4+1] = bright; // G
+		image[i*4+2] = bright; // R
+		// copy array
         world[i] = nworld[i];
     }
     return;
-}
-void mkimg(golworld w) {
-    for (int y=0;y<worldsize[1];y++) {
-        for (int x=0;x<worldsize[0];x++) {
-			uchar bright = 0;
-            if (w[y*worldsize[0]+x]==0) { // dead
-                bright = 0;
-            }
-            else { // alive
-                bright = 255;
-            }
-			image[(y*worldsize[0]+x)*4+0] = bright;
-			image[(y*worldsize[0]+x)*4+1] = bright;
-			image[(y*worldsize[0]+x)*4+2] = bright;
-			image[(y*worldsize[0]+x)*4+3] = 255;
-        }
-    }
 }
