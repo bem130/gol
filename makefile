@@ -5,5 +5,5 @@ win:
 	g++ randomwinapi.cpp -lgdi32 -o randomwinapi -O3
 	./randomwinapi
 main:
-	g++ main.cpp -lgdi32 -o main -O3
+	g++ main.cpp -lgdi32 -o main -O3 -fopenmp
 	./main sampleproj.txt

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <omp.h>
 
 #include <array>
 #include <vector>
@@ -88,9 +89,7 @@ void paintscreen(HWND hwnd) {
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
     hdc=BeginPaint(hwnd,&ps);
-    { // 3d
-        SetDIBitsToDevice(hdc,(width-worldsize[0])/2,(height-worldsize[1])/2,worldsize[0],worldsize[1],0,0,0,worldsize[1],image,&bmpInfo,DIB_RGB_COLORS);
-    }
+    SetDIBitsToDevice(hdc,(width-worldsize[0])/2,(height-worldsize[1])/2,worldsize[0],worldsize[1],0,0,0,worldsize[1],image,&bmpInfo,DIB_RGB_COLORS);
     EndPaint(hwnd,&ps);
     InvalidateRect(hwnd,NULL,FALSE);
     return;
@@ -156,6 +155,7 @@ void first(PSTR fname) {
     return;
 }
 void next() {
+    #pragma omp parallel for
     for (int iy = 1; iy < worldsize[1]-1; iy++) {
         for (int ix = 1; ix < worldsize[0]-1; ix++) {
             int ar = 0;
@@ -174,6 +174,7 @@ void next() {
             }
         }
     }
+    #pragma omp parallel for
     for (int i=0;i<worldsize[0]*worldsize[1];i++) {
         // make image
         uchar bright = nworld[worldsize[0]*worldsize[1]-i]*255;
